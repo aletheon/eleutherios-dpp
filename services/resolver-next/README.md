@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Eleutherios DPP Resolver (Next.js)
 
-## Getting Started
+A minimal resolver that gives every product a **Policy**, **Forum**, **Service actions**, and **Data (events)** route.
 
-First, run the development server:
+## Key URLs (dev)
+- Product hub: `/pp/[gtin]/[serial]`
+- Policy (JSON): `/pp/[gtin]/[serial]/policy`
+- Forum (UI): `/forum/pp/[gtin]/[serial]`
+- Events API (GET/POST): `/api/events?gtin=...&serial=...`
+- Forum API (GET/POST):  `/api/forum?gtin=...&serial=...`
+- Health: `/api/health`
 
+## Quick start
 ```bash
+cd services/resolver-next
+cp .env.local.example .env.local   # fill values
+npm i
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Test
+```bash
+# add event
+curl -s -X POST "http://localhost:3001/api/events?gtin=09412345678903&serial=XYZ123"   -H "Content-Type: application/json"   -H "Authorization: Bearer dev-secret"   -d '{"event_type":"RepairPerformed","payload":{"parts":["gasket-A2"],"co2_avoided":0.8}}'
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# read events
+curl -s "http://localhost:3001/api/events?gtin=09412345678903&serial=XYZ123"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- Firestore is used for persistence. Admin SDK runs in API routes.
+- Firestore **rules do not apply** to Admin SDK; we enforce auth in the routes.
+- See `/docs/ENDPOINTS.md`, `/docs/SECURITY_MODEL.md`, and `/docs/FIREBASE_SETUP.md`.

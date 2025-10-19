@@ -1,0 +1,162 @@
+{
+  "policy_version": "1.0",
+  "scope": "service_gp",
+  "effective_from": "2025-10-16",
+  "notes": "Minimal GP service policy with triage/antibiotic guardrails and consent. Public endpoints must never expose PHI; use signed proofs for integrity.",
+  "policy": {
+    "triage": {
+      "acuity_levels": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "targets_hours": {
+        "P1": 0,
+        "P2": 4,
+        "P3": 24,
+        "P4": 72
+      },
+      "red_flags_examples": [
+        "shortness_of_breath",
+        "chest_pain",
+        "fever_gt_48h",
+        "severe_dehydration",
+        "altered_conscious_state"
+      ],
+      "checklist_examples": {
+        "respiratory": [
+          "onset",
+          "fever",
+          "sob",
+          "oxygen_sats",
+          "sputum",
+          "smoking_status"
+        ],
+        "uti": [
+          "dysuria",
+          "frequency",
+          "fever",
+          "flank_pain",
+          "pregnancy_status"
+        ],
+        "skin": [
+          "erythema_size_cm",
+          "fever",
+          "streaking",
+          "abscess",
+          "diabetes"
+        ]
+      }
+    },
+    "antibiotic_stewardship": {
+      "general_rule": "Do not prescribe antibiotics for uncomplicated viral URTI without red flags.",
+      "must_document": [
+        "indication",
+        "diagnosis_code",
+        "safety_netting_advice"
+      ],
+      "override_required_if": [
+        "broadspectrum_antibiotic",
+        "duration_gt_7_days"
+      ],
+      "review_after_days": 3
+    },
+    "consent_and_privacy": {
+      "consent_required_events": [
+        "EncounterFinalized",
+        "ReferralCreated",
+        "PrescriptionIssued"
+      ],
+      "consent_capture": [
+        "written",
+        "verbal_documented",
+        "digital_form"
+      ],
+      "data_handling": {
+        "phi_visibility": "private",
+        "public_records": "hash_only",
+        "export_controls": [
+          "role_based",
+          "purpose_limited"
+        ]
+      }
+    },
+    "follow_up": {
+      "schedule_required_if": [
+        "antibiotics_prescribed",
+        "new_medication_started",
+        "referral_created",
+        "red_flags_present"
+      ],
+      "default_follow_up_days": 7,
+      "stewardship_follow_up_days": 3
+    },
+    "access_control": {
+      "roles": [
+        "gp",
+        "nurse",
+        "admin",
+        "patient",
+        "external_specialist"
+      ],
+      "matrix": {
+        "gp": [
+          "read_all",
+          "write_encounter",
+          "issue_rx",
+          "create_referral",
+          "view_phi"
+        ],
+        "nurse": [
+          "read_all",
+          "write_triage",
+          "view_phi"
+        ],
+        "admin": [
+          "schedule",
+          "billing",
+          "no_phi"
+        ],
+        "patient": [
+          "upload_docs",
+          "view_patient_copy"
+        ],
+        "external_specialist": [
+          "view_referral_packet"
+        ]
+      }
+    },
+    "audit_and_proof": {
+      "default_mode": "signed",
+      "allowed_modes": [
+        "none",
+        "signed",
+        "anchored"
+      ],
+      "public_signing_key_url": "/.well-known/eleutherios-signing-key.json"
+    },
+    "data_retention": {
+      "clinical_records_years": 10,
+      "audit_records_years": 10,
+      "delete_request_process": "role_review_and_legal_hold_checks"
+    },
+    "telehealth": {
+      "allowed_modalities": [
+        "video",
+        "phone",
+        "asynchronous_msg"
+      ],
+      "telehealth_exclusions": [
+        "chest_pain",
+        "severe_dyspnea",
+        "uncontrolled_bleeding"
+      ],
+      "identity_check": [
+        "dob",
+        "address_or_nhi_mrn",
+        "two_factor_optional"
+      ]
+    }
+  }
+}

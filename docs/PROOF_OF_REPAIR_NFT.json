@@ -1,0 +1,53 @@
+{
+  "name": "Proof-of-Repair \u2014 Example",
+  "description": "Tamper-proof record of a verified repair. Anchors the DPP event hash on-chain and links back to the product policy page.",
+  "external_url": "https://example.com/pp/HOME-00058C",
+  "image": "https://example.com/assets/proof-of-repair-badge.png",
+  "attributes": [
+    {
+      "trait_type": "Event Type",
+      "value": "RepairPerformed"
+    },
+    {
+      "trait_type": "Product",
+      "value": "HOME-00058C"
+    },
+    {
+      "trait_type": "Serial/Asset",
+      "value": "ROOM-BED2"
+    },
+    {
+      "trait_type": "Technician",
+      "value": "Hemi Repairs Ltd"
+    },
+    {
+      "trait_type": "CO2 Avoided (t)",
+      "value": 0.12
+    },
+    {
+      "trait_type": "Parts Used",
+      "value": "FanMotor-A2"
+    },
+    {
+      "trait_type": "Verified By",
+      "value": "Eleutherios DPP"
+    },
+    {
+      "trait_type": "Date",
+      "value": "2025-10-16"
+    }
+  ],
+  "properties": {
+    "dpp_event": {
+      "event_type": "RepairPerformed",
+      "hash_algo": "sha256",
+      "event_hash": "0xREPLACE_WITH_HASH_FROM_ANCHOR",
+      "tx_hash": "0xREPLACE_WITH_CHAIN_TX",
+      "chain": "polygon"
+    },
+    "governance": {
+      "policy_url": "https://example.com/pp/HOME-00058C/policy",
+      "forum_url": "https://example.com/forum/pp/HOME-00058C"
+    }
+  }
+}
