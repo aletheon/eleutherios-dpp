@@ -1,38 +1,52 @@
-import { NextResponse } from "next/server";
-import { toProductDocId } from "@/app/lib/ids";
+// app/api/pp/[gtin]/[serial]/policy/route.ts
 import { db } from "@/app/lib/firebaseAdmin";
+// If you import the JSON fallback:
+import healthyHomes from "@/app/lib/policies/HEALTHY_HOMES_POLICY.json";
 
-export function GET(
+export async function GET(
   _req: Request,
-  { params }: { params: { gtin: string; serial: string } }
+  ctx: { params: { gtin: string; serial: string } }
 ) {
-  const { gtin, serial } = params;
+  const productDocId = `${ctx.params.gtin}_${ctx.params.serial}`;
+  const snap = await db
+    .collection("products")
+    .doc(productDocId)
+    .collection("meta")
+    .doc("policy")
+    .get();
 
-  return NextResponse.json({
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://schema.eleutherios.nz/pfsd/v1"
-    ],
-    "type": ["VerifiableCredential", "DigitalProductPolicy"],
-    "issuer": "did:web:manufacturer.example",
-    "issuanceDate": new Date().toISOString(),
-    "credentialSubject": {
-      "id": `urn:epc:id:sgtin:${gtin}.${serial}`,
-      "pfsd": {
-        "policy": {
-          "version": "1.0.0",
-          "ghg_target": { "unit": "kgCO2e", "lifecycle": "cradle-to-grave", "max": 16.0 },
-          "repairability": { "score": 7, "spares_available_until": "2030-12-31" },
-          "epr": { "scheme": "NZ-E-waste-Beta", "takeback": "$10 credit" },
-          "disposal": ["repair", "reuse", "recycle"]
-        },
-        "forum_url": `/forum/pp/${gtin}/${serial}`,
-        "service_actions": [
-          { "name": "Book repair", "url": `/api/actions/repair?gtin=${gtin}&serial=${serial}` },
-          { "name": "Request take-back", "url": `/api/actions/recycle?gtin=${gtin}&serial=${serial}` }
-        ]
-      }
-    }
-    // NOTE: add a real "proof" once you wire signing
+  const policy = snap.exists ? snap.data() : (healthyHomes as any);
+  return new Response(JSON.stringify({ productDocId, policy }), {
+    headers: { "content-type": "application/json" },
+  });
+}
+
+export async function POST(
+  req: Request,
+  ctx: { params: { gtin: string; serial: string } }
+) {
+  // simple dev write guard
+  const secret = process.env.RESOLVER_DEV_SECRET || "dev-secret";
+  const auth = req.headers.get("authorization") || "";
+  if (!auth.includes(secret)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  const productDocId = `${ctx.params.gtin}_${ctx.params.serial}`;
+  const body = await req.json().catch(() => ({}));
+  const policy = body?.policy || { ...healthyHomes, version: "v2" }; // default override for demo
+
+  await db
+    .collection("products")
+    .doc(productDocId)
+    .collection("meta")
+    .doc("policy")
+    .set(policy, { merge: true });
+
+  return new Response(JSON.stringify({ ok: true, productDocId, policy }), {
+    headers: { "content-type": "application/json" },
   });
 }

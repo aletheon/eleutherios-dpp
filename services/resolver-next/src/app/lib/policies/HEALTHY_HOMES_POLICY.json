@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "context": "HealthyHomes",
+  "checks": [
+    {
+      "id": "egress_window",
+      "label": "Bedroom has compliant egress window"
+    },
+    {
+      "id": "ventilation",
+      "label": "Mechanical ventilation or openable windows present"
+    },
+    {
+      "id": "room_size",
+      "label": "Minimum habitable room size met"
+    }
+  ],
+  "pass_condition": "inspection.checklist includes ['egress','ventilation']",
+  "evidence_notes": "Attach photo/GPS/time where available; raw evidence stays with provider"
+}
